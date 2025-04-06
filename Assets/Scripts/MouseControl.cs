@@ -11,30 +11,50 @@ public class MouseControl : MonoBehaviour
     private bool zoomed = false;
     private Vector3 velocity;
     Camera cam;
+    bool Focused
+    {
+        get => Cursor.lockState == CursorLockMode.Locked;
+        set
+        {
+            Cursor.lockState = value ? CursorLockMode.Locked : CursorLockMode.None;
+            Cursor.visible = value == false;
+        }
+    }
     // Start is called before the first frame update
     void Start()
     {
         cam = GetComponent<Camera>();
+        Focused = false;
     }
 
     // Update is called once per frame
     void Update()
     {
-        UpdateCamera();
+        if (Focused)
+        { 
+            UpdateCamera();
 
-        UpdateVerticalPos();
+            UpdateVerticalPos();
 
-        velocity = Vector3.Lerp(velocity, Vector3.zero, dampingCoefficient * Time.deltaTime);
-        transform.position += velocity * Time.deltaTime;
+            if (Input.GetKeyDown(KeyCode.LeftAlt))
+                Focused = false;
+        }
+        else if (Input.GetKeyDown(KeyCode.LeftAlt))
+        {
+            Focused = true;
+        }
+        
+
+       // velocity = Vector3.Lerp(velocity, Vector3.zero, dampingCoefficient * Time.deltaTime);
+        //transform.position += velocity * Time.deltaTime;
     }
-
     private void UpdateVerticalPos()
     {
-        Vector3 input = default;
-        if (Input.GetKey(KeyCode.Space) && transform.position.y < 5) input += Vector3.up;
-        if (Input.GetKey(KeyCode.LeftControl) && transform.position.y > 1) input += Vector3.down;
-        Vector3 direction = transform.TransformVector(input.normalized);
-        velocity += direction * verticalSpeed * Time.deltaTime;
+       // Vector3 input = default;
+        if (Input.GetKey(KeyCode.Space) && transform.position.y < 20) transform.position += Vector3.up * verticalSpeed * Time.deltaTime;
+        if (Input.GetKey(KeyCode.LeftControl) && transform.position.y > -20) transform.position += Vector3.down * verticalSpeed * Time.deltaTime;
+        //  Vector3 direction = transform.TransformVector(input.normalized);
+        //  velocity += direction * verticalSpeed * Time.deltaTime;
     }
 
     private void UpdateCamera()
@@ -57,5 +77,9 @@ public class MouseControl : MonoBehaviour
                 zoomed = true;
             }
         }
+    }
+    public void LookAtPoint(Transform pos)
+    {
+        transform.LookAt(pos.position);
     }
 }
